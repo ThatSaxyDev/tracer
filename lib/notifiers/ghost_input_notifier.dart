@@ -15,8 +15,8 @@ final ghostInputProvider =
 class GhostInputNotifier extends Notifier<GhostInputState> {
   GhostRaceData get ghostRaceData => ref.watch(ghostRaceDataProvider);
   GameState get gameState => ref.watch(gameNotifierProvider);
-  // DateTime? raceStart;
-  // late String targetText;
+
+  Timer? playbackTimer; // Timer to manage playback
 
   @override
   GhostInputState build() {
@@ -25,10 +25,6 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
       playBackState: PlayBackState.notStarted,
     );
   }
-
-  // void setLastGhostInput({required String lastInput}) {
-  //   state = lastInput;
-  // }
 
   void clearGhostInput() {
     state = state.copyWith(
@@ -67,6 +63,11 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
       await Future.delayed(delay);
 
       // Update the state with the next character to simulate typing
+      if (state.playBackState == PlayBackState.stopped) {
+        print('Playback stopped at character $i');
+        break;
+      }
+
       state = state.copyWith(
         input: reconstructedTargetText.substring(0, i + 1),
         playBackState: PlayBackState.playing,
@@ -75,9 +76,23 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
     }
 
     // End playback
+    if (state.playBackState != PlayBackState.stopped) {
+      state = state.copyWith(
+        playBackState: PlayBackState.stopped,
+      );
+      print('Ghost playback ended');
+    }
+  }
+
+  void stopPlayback() {
+    // Set the playback state to stopped and cancel the ongoing playback
+    if (playbackTimer?.isActive ?? false) {
+      playbackTimer?.cancel();
+    }
     state = state.copyWith(
       playBackState: PlayBackState.stopped,
     );
+    print('Ghost playback stopped');
   }
 }
 

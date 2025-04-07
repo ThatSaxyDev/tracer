@@ -5,6 +5,7 @@ import 'package:tracer/models/ghost_race_data.dart';
 import 'package:tracer/models/player_entity.dart';
 import 'package:tracer/notifiers/ghost_input_notifier.dart';
 import 'package:tracer/shared/extensions.dart';
+import 'package:tracer/widgets/animated_sign.dart/animated_sign.dart';
 import 'package:tracer/widgets/player_view.dart';
 
 import '../notifiers/game_notifier.dart';
@@ -58,10 +59,11 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
       onPopInvokedWithResult: (didPop, result) {
         ref.read(ghostInputProvider.notifier).clearGhostInput();
         ref.read(gameNotifierProvider.notifier).clearData();
+        ref.read(ghostInputProvider.notifier).stopPlayback();
       },
       child: Scaffold(
         body: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -71,30 +73,32 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
               // const SizedBox(height: 12),
               PlayerView(player: gameState.player),
               const SizedBox(height: 14),
-
-              Row(
-                children: [
-                  // AnimatedContainer(
-                  //   duration: duration,
-                  // ),
-                  // Expanded(
-                  //   child: Divider(
-                  //     color: Colors.greenAccent,
-                  //     thickness: 1,
-                  //   ),
-                  // ),
-                  AnimatedLessThanSign(),
-                  SignWidget(
-                    painter: GreaterThanSignPainter(),
-                  ),
-                  // Expanded(
-                  //   child: Divider(
-                  //     color: Colors.redAccent,
-                  //     thickness: 1,
-                  //   ),
-                  // ),
-                ],
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 50,
+                child: Stack(
+                  children: [
+                    AnimatedSign(
+                      progress: gameState.player.input.length /
+                          gameState.targetText.length,
+                      isIndefinite: false,
+                      direction: ArrowDirection.left,
+                    ),
+                    AnimatedSign(
+                      progress: ref.watch(ghostInputProvider).input.length /
+                          gameState.targetText.length,
+                      isIndefinite: false,
+                      direction: ArrowDirection.right,
+                    ),
+                  ],
+                ),
               ),
+              // Row(
+              //   children: [
+              //     AnimatedLessThanSign(),
+              //     AnimatedGreaterThanSign(),
+              //   ],
+              // ),
               const SizedBox(height: 14),
 
               // if (gameState.otherPlayers.isNotEmpty)
@@ -203,147 +207,4 @@ RichText formatDuration(Duration d) {
     ],
   ));
   // return '$minutes mins ${seconds.toString().padLeft(2, '0')} secs ${(d.inMilliseconds % 1000).toString().padLeft(3, '0')}';
-}
-
-class GreaterThanSignPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..strokeWidth = 1
-      ..color = Colors.redAccent
-      ..style = PaintingStyle.stroke;
-
-    Path path = Path();
-
-    // Define the points for the greater-than sign ">"
-    Offset pointA = Offset(0, 0); // Top-left
-    Offset pointB =
-        Offset(size.width - 110, size.height / 2); // Right middle (moved left)
-    Offset pointC = Offset(0, size.height); // Bottom-left (no change)
-
-    // Draw the triangle-like ">" shape (inverted)
-    path.moveTo(pointA.dx, pointA.dy);
-    path.lineTo(pointB.dx, pointB.dy);
-    path.lineTo(pointC.dx, pointC.dy);
-
-    // Add a line to join the pointed end to the middle of the Y shape
-    path.moveTo(
-        size.width, size.height / 2); // Pointing end, extended to the right
-    path.lineTo(size.width - 110,
-        size.height / 2); // Horizontal line joining the two points
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-class LessThanSignPainter extends CustomPainter {
-  final Animation<double> animation;
-
-  LessThanSignPainter(this.animation) : super(repaint: animation);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..strokeWidth = 1
-      ..color = Colors.greenAccent
-      ..style = PaintingStyle.stroke;
-
-    Path path = Path();
-
-    Offset pointD = Offset(0, size.height / 2);
-
-    // Define the points for the less-than sign "<"
-    Offset pointA =
-        Offset(size.width, 0); // Top-right (invert the "greater than" shape)
-    Offset pointB =
-        Offset(animation.value, size.height / 2); // Animated middle point
-    Offset pointC = Offset(size.width, size.height); // Bottom-right (top point)
-
-    // Draw the triangle-like "<" shape (inverted)
-    // path.moveTo(pointA.dx, pointA.dy);
-    // path.lineTo(pointB.dx, pointB.dy);
-    // path.lineTo(pointC.dx, pointC.dy);
-
-    // Add a line to join the pointed end to the middle of the Y shape
-    path.moveTo(pointD.dx, pointD.dy);
-    path.lineTo(pointB.dx, pointB.dy); // Horizontal line joining the two points
-    path.lineTo(pointA.dx, pointA.dy);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class SignWidget extends StatelessWidget {
-  final CustomPainter painter;
-  const SignWidget({
-    super.key,
-    required this.painter,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: CustomPaint(
-        size: Size(50, 50), // Specify the size of the canvas
-        painter: painter,
-      ),
-    );
-  }
-}
-
-class AnimatedLessThanSign extends StatefulWidget {
-  const AnimatedLessThanSign({super.key});
-
-  @override
-  State<AnimatedLessThanSign> createState() => _AnimatedLessThanSignState();
-}
-
-class _AnimatedLessThanSignState extends State<AnimatedLessThanSign>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize the animation controller
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 2),
-    );
-
-    // Create a tween to animate the position of the middle point (pointB)
-    _animation = Tween<double>(begin: 0, end: 110.0).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: CustomPaint(
-        size: Size(50, 50),
-        painter: LessThanSignPainter(_animation),
-      ),
-    );
-  }
 }
