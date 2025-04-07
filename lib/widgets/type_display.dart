@@ -75,7 +75,7 @@ class TypeDisplay extends StatelessWidget {
       char,
       key: key,
       style: TextStyle(
-        fontSize: player.playerId == '-1' ? 18 : 14,
+        fontSize: player.playerId == '-1' ? 18 : 12,
         fontFamily: 'Courier',
         color: color,
         decoration: isCursor ? TextDecoration.underline : TextDecoration.none,

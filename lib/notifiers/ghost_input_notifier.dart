@@ -22,7 +22,7 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
   GhostInputState build() {
     return GhostInputState(
       input: '',
-      playBackState: PlayBackState.stopped,
+      playBackState: PlayBackState.notStarted,
     );
   }
 
@@ -33,11 +33,14 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
   void clearGhostInput() {
     state = state.copyWith(
       input: '',
-      playBackState: PlayBackState.stopped,
+      playBackState: PlayBackState.notStarted,
     );
   }
 
   void startPlayback() async {
+    state = state.copyWith(
+      playBackState: PlayBackState.notStarted,
+    );
     if (ghostRaceData.lastSavedkeystrokes.isEmpty) {
       return;
     }
@@ -79,6 +82,7 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
 }
 
 enum PlayBackState {
+  notStarted,
   playing,
   paused,
   stopped,

@@ -19,26 +19,23 @@ class PlayerView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Time: ${formatDuration(player.elapsedTime)}',
-            style: TextStyle(
-              fontSize: player.playerId == '-1' ? 16 : 12,
-              color: Colors.greenAccent,
-            )),
-        Text(
-            'Accuracy: ${player.accuracy(gameState.targetText).toStringAsFixed(1)}%',
-            style: TextStyle(
-              fontSize: player.playerId == '-1' ? 16 : 12,
-              color: player.accuracy(gameState.targetText) >= 95
-                  ? Colors.greenAccent
-                  : (player.accuracy(gameState.targetText) >= 80
-                      ? Colors.yellowAccent
-                      : Colors.redAccent),
-            )),
-        Text('WPM: ${player.wpm(gameState.targetText).toStringAsFixed(1)}',
-            style: TextStyle(
-              fontSize: player.playerId == '-1' ? 16 : 12,
-              color: Colors.cyanAccent,
-            )),
+        formatDuration(player.elapsedTime),
+
+        // Text(
+        //     'Accuracy: ${player.accuracy(gameState.targetText).toStringAsFixed(1)}%',
+        //     style: TextStyle(
+        //       fontSize: player.playerId == '-1' ? 16 : 12,
+        //       color: player.accuracy(gameState.targetText) >= 95
+        //           ? Colors.greenAccent
+        //           : (player.accuracy(gameState.targetText) >= 80
+        //               ? Colors.yellowAccent
+        //               : Colors.redAccent),
+        //     )),
+        // Text('WPM: ${player.wpm(gameState.targetText).toStringAsFixed(1)}',
+        //     style: TextStyle(
+        //       fontSize: player.playerId == '-1' ? 16 : 12,
+        //       color: Colors.cyanAccent,
+        //     )),
         const SizedBox(height: 16),
         TypeDisplay(
           target: gameState.targetText,
