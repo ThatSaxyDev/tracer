@@ -18,14 +18,21 @@ class RaceScreen extends ConsumerStatefulWidget {
 
 class _RaceScreenState extends ConsumerState<RaceScreen> {
   final startedPlayBack = false.notifier;
+  final _controller = TextEditingController();
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback(
+  //     (_) {
+  //       // ref.read(ghostInputProvider.notifier).startPlayback();
+  //     },
+  //   );
+  // }
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        // ref.read(ghostInputProvider.notifier).startPlayback();
-      },
-    );
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,15 +78,17 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                   .isNotEmpty)
                 TypeDisplay(
                   target: gameState.targetText,
-                  input: ref.watch(ghostInputProvider),
+                  input: ref.watch(ghostInputProvider).input,
                   player: PlayerEntity(
-                      playerId: '0', input: ref.watch(ghostInputProvider)),
+                      playerId: '0',
+                      input: ref.watch(ghostInputProvider).input),
                 ),
 
               const SizedBox(height: 24),
-              startedPlayBack.sync(
-                builder: (context, value, child) {
+              [startedPlayBack, _controller].multiSync(
+                builder: (context, child) {
                   return TextField(
+                    controller: _controller,
                     autofocus: true,
                     autocorrect: false,
                     enableSuggestions: false,
@@ -93,13 +102,22 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
+                      // Prevent backspacing by ensuring the input length doesn't decrease
+
                       if (value.isNotEmpty && !startedPlayBack.value) {
                         startedPlayBack.value = true;
                         ref.read(ghostInputProvider.notifier).startPlayback();
                       }
-                      ref
-                          .read(gameNotifierProvider.notifier)
-                          .updateInput(value: value);
+                      if (value.length >= gameState.player.input.length) {
+                        ref
+                            .read(gameNotifierProvider.notifier)
+                            .updateInput(value: value);
+                      } else {
+                        _controller.text = gameState.player.input;
+                        // _controller.selection = TextSelection.fromPosition(
+                        //   TextPosition(offset: gameState.player.input.length),
+                        // );
+                      }
                     },
                   );
                 },
