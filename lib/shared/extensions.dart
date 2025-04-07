@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 
 /// Extension for creating a ValueNotifier from a value directly.
 extension ValueNotifierExtension<T> on T {
@@ -68,4 +69,20 @@ extension WidgetAnimation on Widget {
         duration: animationDuration ?? 500.ms,
         curve: curve ?? Curves.decelerate,
       );
+}
+
+
+class NoPasteFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.length > oldValue.text.length &&
+        newValue.text.length - oldValue.text.length > 3) {
+      // This is likely a paste operation
+      return oldValue;
+    }
+    return newValue;
+  }
 }

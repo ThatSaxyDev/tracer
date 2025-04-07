@@ -123,6 +123,9 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                     autocorrect: false,
                     enableSuggestions: false,
                     cursorColor: Colors.greenAccent,
+                    inputFormatters: [
+                      NoPasteFormatter(),
+                    ],
                     style: const TextStyle(
                       color: Colors.white,
                       fontFamily: 'Courier',
