@@ -132,17 +132,35 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
-                      // Prevent backspacing by ensuring the input length doesn't decrease
-
                       if (value.isNotEmpty && !startedPlayBack.value) {
                         startedPlayBack.value = true;
                         ref.read(ghostInputProvider.notifier).startPlayback();
                       }
+
+                      // // Check if typing penalty is active
+                      // final isPenaltyActive =
+                      //     ref.read(gameNotifierProvider).isTypoPenaltyActive;
+
+                      // // If penalty active, revert to previous text state (no input accepted)
+                      // if (isPenaltyActive) {
+                      //   _controller.text =
+                      //       ref.read(gameNotifierProvider).player.input;
+                      //   _controller.selection = TextSelection.fromPosition(
+                      //     TextPosition(offset: _controller.text.length),
+                      //   );
+                      //   return;
+                      // }
+
+                      // Prevent backspacing by ensuring the input length doesn't decrease
                       if (value.length >=
                           ref.watch(gameNotifierProvider).player.input.length) {
-                        ref
-                            .read(gameNotifierProvider.notifier)
-                            .updateInput(value: value);
+                        ref.read(gameNotifierProvider.notifier).updateInput(
+                              value: value,
+                              typoPenaltyEffect: () {
+                                _controller.text =
+                                    ref.read(gameNotifierProvider).player.input;
+                              },
+                            );
                       } else {
                         _controller.text =
                             ref.watch(gameNotifierProvider).player.input;

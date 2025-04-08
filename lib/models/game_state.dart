@@ -4,21 +4,26 @@ class GameState {
   final String targetText;
   final PlayerEntity player;
   final List<PlayerEntity> otherPlayers;
+  final bool isTypoPenaltyActive;
 
   GameState({
     required this.targetText,
     required this.player,
     this.otherPlayers = const [],
+    this.isTypoPenaltyActive = false,
   });
 
   GameState copyWith({
+    String? targetText,
     PlayerEntity? player,
     List<PlayerEntity>? otherPlayers,
+    bool? isTypoPenaltyActive,
   }) {
     return GameState(
-      targetText: targetText,
+      targetText: targetText ?? this.targetText,
       player: player ?? this.player,
       otherPlayers: otherPlayers ?? this.otherPlayers,
+      isTypoPenaltyActive: isTypoPenaltyActive ?? this.isTypoPenaltyActive,
     );
   }
 }

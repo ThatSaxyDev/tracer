@@ -71,7 +71,6 @@ extension WidgetAnimation on Widget {
       );
 }
 
-
 class NoPasteFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

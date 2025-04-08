@@ -72,7 +72,7 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
         input: reconstructedTargetText.substring(0, i + 1),
         playBackState: PlayBackState.playing,
       );
-      print('Ghost typed: ${reconstructedTargetText[i]} at $delay');
+      // print('Ghost typed: ${reconstructedTargetText[i]} at $delay');
     }
 
     // End playback

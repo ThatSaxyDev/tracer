@@ -81,37 +81,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 return Opacity(
                                   opacity: index == 0 ? 1 : 0.3,
                                   child: GameButton(
-                                      onPressed: () {
-                                        ref
-                                            .read(ghostInputProvider.notifier)
-                                            .clearGhostInput();
-                                        ref
-                                            .read(gameNotifierProvider.notifier)
-                                            .clearData();
-                                        ref
-                                            .read(ghostInputProvider.notifier)
-                                            .stopPlayback();
-                                        
-                                        switch (index) {
-                                          case 0:
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        const LevelSelectionView()));
-                                            break;
-                                          default:
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                              content: Text(
-                                                  'Multiplayer mode is not available yet.'),
-                                            ));
-                                        }
-                                      },
-                                      text: switch (index) {
-                                        0 => 'VS Ghost',
-                                        _ => 'VS Player',
-                                      }).fadeInFromBottom(delay: (index * 400).ms),
+                                          onPressed: () {
+                                            ref
+                                                .read(
+                                                    ghostInputProvider.notifier)
+                                                .clearGhostInput();
+                                            ref
+                                                .read(gameNotifierProvider
+                                                    .notifier)
+                                                .clearData();
+                                            ref
+                                                .read(
+                                                    ghostInputProvider.notifier)
+                                                .stopPlayback();
+
+                                            switch (index) {
+                                              case 0:
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            const LevelSelectionView()));
+                                                break;
+                                              default:
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                        const SnackBar(
+                                                  content: Text(
+                                                      'Multiplayer mode is not available yet.'),
+                                                ));
+                                            }
+                                          },
+                                          text: switch (index) {
+                                            0 => 'VS Ghost',
+                                            _ => 'VS Player',
+                                          })
+                                      .fadeInFromBottom(
+                                          delay: (index * 400).ms),
                                 );
                               }),
                             ),
