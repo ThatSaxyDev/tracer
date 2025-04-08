@@ -6,10 +6,16 @@ import 'package:tracer/widgets/animated_sign.dart/animated_sign.dart';
 class TracerInsignia extends StatelessWidget {
   final double? height;
   final double? width;
+  final double? leftProgress;
+  final double? rightProgress;
+  final bool isIndefinite;
   const TracerInsignia({
     super.key,
     this.height,
     this.width,
+    this.leftProgress,
+    this.rightProgress,
+    this.isIndefinite = true,
   });
 
   @override
@@ -20,9 +26,13 @@ class TracerInsignia extends StatelessWidget {
       child: Stack(
         children: [
           AnimatedSign(
+            progress: leftProgress,
+            isIndefinite: isIndefinite,
             direction: ArrowDirection.left,
           ),
           AnimatedSign(
+            progress: rightProgress,
+            isIndefinite: isIndefinite,
             direction: ArrowDirection.right,
           ),
         ],

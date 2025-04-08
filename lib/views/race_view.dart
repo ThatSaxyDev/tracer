@@ -7,6 +7,7 @@ import 'package:tracer/models/player_entity.dart';
 import 'package:tracer/notifiers/ghost_input_notifier.dart';
 import 'package:tracer/shared/extensions.dart';
 import 'package:tracer/widgets/animated_sign.dart/animated_sign.dart';
+import 'package:tracer/widgets/animated_sign.dart/tracer_insignia.dart';
 import 'package:tracer/widgets/player_view.dart';
 
 import '../notifiers/game_notifier.dart';
@@ -44,8 +45,11 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
     // final gameState = ref.watch(gameNotifierProvider);
     // GhostRaceData ghostRaceData = GhostRaceData(keystrokes: []);
 
-    if (ref.watch(gameNotifierProvider).player.isComplete(ref.watch(gameNotifierProvider).targetText)) {
-     Future.delayed(0.ms , () {
+    if (ref
+        .watch(gameNotifierProvider)
+        .player
+        .isComplete(ref.watch(gameNotifierProvider).targetText)) {
+      Future.delayed(0.ms, () {
         Navigator.pushReplacement(
           // ignore: use_build_context_synchronously
           context,
@@ -75,26 +79,17 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
               // const SizedBox(height: 12),
               PlayerView(player: ref.watch(gameNotifierProvider).player),
               const SizedBox(height: 14),
-              SizedBox(
+              TracerInsignia(
                 width: MediaQuery.of(context).size.width,
                 height: 50,
-                child: Stack(
-                  children: [
-                    AnimatedSign(
-                      progress: ref.watch(gameNotifierProvider).player.input.length /
-                          ref.watch(gameNotifierProvider).targetText.length,
-                      isIndefinite: false,
-                      direction: ArrowDirection.left,
-                    ),
-                    AnimatedSign(
-                      progress: ref.watch(ghostInputProvider).input.length /
-                          ref.watch(gameNotifierProvider).targetText.length,
-                      isIndefinite: false,
-                      direction: ArrowDirection.right,
-                    ),
-                  ],
-                ),
+                isIndefinite: false,
+                leftProgress:
+                    ref.watch(gameNotifierProvider).player.input.length /
+                        ref.watch(gameNotifierProvider).targetText.length,
+                rightProgress: ref.watch(ghostInputProvider).input.length /
+                    ref.watch(gameNotifierProvider).targetText.length,
               ),
+
               // Row(
               //   children: [
               //     AnimatedLessThanSign(),
@@ -143,12 +138,14 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                         startedPlayBack.value = true;
                         ref.read(ghostInputProvider.notifier).startPlayback();
                       }
-                      if (value.length >= ref.watch(gameNotifierProvider).player.input.length) {
+                      if (value.length >=
+                          ref.watch(gameNotifierProvider).player.input.length) {
                         ref
                             .read(gameNotifierProvider.notifier)
                             .updateInput(value: value);
                       } else {
-                        _controller.text = ref.watch(gameNotifierProvider).player.input;
+                        _controller.text =
+                            ref.watch(gameNotifierProvider).player.input;
                         // _controller.selection = TextSelection.fromPosition(
                         //   TextPosition(offset: gameState.player.input.length),
                         // );
