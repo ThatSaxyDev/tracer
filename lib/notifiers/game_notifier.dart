@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tracer/models/ghost_race_data.dart';
 import 'package:tracer/models/player_entity.dart';
@@ -43,7 +44,10 @@ class GameNotifier extends Notifier<GameState> {
     );
   }
 
-  void updateInput({required String value}) {
+  void updateInput({
+    required String value,
+    void Function()? onComplete,
+  }) {
     final now = DateTime.now();
     final targetText = state.targetText;
 
@@ -69,32 +73,34 @@ class GameNotifier extends Notifier<GameState> {
       final elapsed = now.difference(updatedPlayer.startTime!);
       final charIndex = cappedInput.length - 1;
 
-      if (charIndex >= 0 && charIndex < targetText.length) {
-        ref.read(ghostRaceDataProvider.notifier).addKeystroke(
-              charIndex,
-              elapsed,
-              cappedInput[charIndex],
-            );
-      }
+      // if (charIndex >= 0 && charIndex < targetText.length) {
+      //   ref.read(ghostRaceDataProvider.notifier).addKeystroke(
+      //         charIndex,
+      //         elapsed,
+      //         cappedInput[charIndex],
+      //       );
+      // }
     }
 
     // Log keystrokes (optional debugging)
-    final keystrokes = ref.read(ghostRaceDataProvider).currentkeystrokes;
-    for (int i = 0; i < keystrokes.length; i++) {
-      final k = keystrokes[i];
-      if (k.charIndex >= 0 && k.charIndex < cappedInput.length) {
-        final char = cappedInput[k.charIndex];
-        print(
-            'Keystroke ${i + 1}: Index: ${k.charIndex}, Char: "$char", Time: ${k.timestamp}');
-      } else {
-        print('Keystroke ${i + 1}: Index out of bounds: ${k.charIndex}');
-      }
-    }
-    print('Total Keystrokes: ${keystrokes.length}');
+    // final keystrokes = ref.read(ghostRaceDataProvider).currentkeystrokes;
+    // for (int i = 0; i < keystrokes.length; i++) {
+    //   final k = keystrokes[i];
+    //   if (k.charIndex >= 0 && k.charIndex < cappedInput.length) {
+    //     final char = cappedInput[k.charIndex];
+    //     print(
+    //         'Keystroke ${i + 1}: Index: ${k.charIndex}, Char: "$char", Time: ${k.timestamp}');
+    //   } else {
+    //     print('Keystroke ${i + 1}: Index out of bounds: ${k.charIndex}');
+    //   }
+    // }
+    // print('Total Keystrokes: ${keystrokes.length}');
 
     // Start UI update timer
     if (isFirstInput) _startTimer();
-    if (isComplete && state.player.endTime == null) _stopTimer();
+    if (isComplete && state.player.endTime == null) {
+      _stopTimer();
+    }
 
     // Commit updated player to state
     state = state.copyWith(player: updatedPlayer);

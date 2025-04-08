@@ -2,12 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tracer/notifiers/game_notifier.dart';
 import 'package:tracer/notifiers/ghost_input_notifier.dart';
+import 'package:tracer/views/home_view.dart';
 
-class ResultScreen extends ConsumerWidget {
+class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends ConsumerState<ResultScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // ref.read(gameNotifierProvider.notifier).clearPlayerInput();
+      // ref.read(ghostInputProvider.notifier).clearGhostInput();
+      ref.read(ghostInputProvider.notifier).stopPlayback();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final game = ref.watch(gameNotifierProvider);
     final duration = game.player.elapsedTime;
     final accuracy = game.player.accuracy(game.targetText);
@@ -47,7 +63,10 @@ class ResultScreen extends ConsumerWidget {
                 onPressed: () {
                   ref.read(gameNotifierProvider.notifier).clearData();
                   ref.read(ghostInputProvider.notifier).clearGhostInput();
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.greenAccent,

@@ -17,7 +17,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF1E1E1E),
         textTheme: const TextTheme(
-          bodyLarge: TextStyle(fontFamily: 'Courier', fontSize: 18),
+          bodyLarge: TextStyle(
+            fontFamily: 'Courier',
+            fontSize: 18,
+          ),
         ),
       ),
       home: const HomeScreen(),

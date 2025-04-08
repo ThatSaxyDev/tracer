@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:tracer/notifiers/game_notifier.dart';
 import 'package:tracer/notifiers/ghost_input_notifier.dart';
 import 'package:tracer/shared/extensions.dart';
+import 'package:tracer/views/level_selection_view.dart';
 import 'package:tracer/widgets/animated_sign.dart/animated_sign.dart';
+import 'package:tracer/widgets/animated_sign.dart/tracer_insignia.dart';
+import 'package:tracer/widgets/game_button.dart';
 import 'race_view.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -30,81 +33,91 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showStartButton() {
-    Future.delayed(3.seconds).then((_) {
+    Future.delayed(2.seconds).then((_) {
       _showStart.value = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(height: 64),
-              Column(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        body: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Stack(
+                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
-                    width: 200,
-                    height: 40,
-                    child: Stack(
-                      children: [
-                        AnimatedSign(
-                          direction: ArrowDirection.left,
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TracerInsignia(
+                        height: 40,
+                        width: 200,
+                      ).fadeIn(delay: 400.ms),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'T-Racer',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
                         ),
-                        AnimatedSign(
-                          direction: ArrowDirection.right,
-                        ),
-                      ],
-                    ),
+                      ).fadeIn(delay: 200.ms),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    'T-Racer',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier',
-                    ),
+                  _showStart.sync(
+                    builder: (context, value, child) => _showStart.value
+                        ? Padding(
+                            padding: EdgeInsets.only(bottom: 32),
+                            child: Column(
+                              spacing: 15,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: List.generate(2, (index) {
+                                return GameButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(ghostInputProvider.notifier)
+                                          .clearGhostInput();
+                                      ref
+                                          .read(gameNotifierProvider.notifier)
+                                          .clearData();
+                                      ref
+                                          .read(ghostInputProvider.notifier)
+                                          .stopPlayback();
+      
+                                      switch (index) {
+                                        case 0:
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      const LevelSelectionView()));
+                                          break;
+                                        default:
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                            content: Text(
+                                                'Multiplayer mode is not available yet.'),
+                                          ));
+                                      }
+                                    },
+                                    text: switch (index) {
+                                      0 => 'VS Ghost',
+                                      _ => 'VS Player',
+                                    }).fadeInFromBottom(delay: (index * 400).ms);
+                              }),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ),
-              _showStart.sync(
-                builder: (context, value, child) => _showStart.value
-                    ? Padding(
-                        padding: EdgeInsets.only(bottom: 32),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ref
-                                .read(ghostInputProvider.notifier)
-                                .clearGhostInput();
-                            ref.read(gameNotifierProvider.notifier).clearData();
-                            ref
-                                .read(ghostInputProvider.notifier)
-                                .stopPlayback();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const RaceScreen()));
-                          },
-                          child: const Text('Start'),
-                        ),
-                      ).fadeInFromBottom(delay: 0.ms)
-                    : Opacity(
-                        opacity: 0,
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 32),
-                          child: ElevatedButton(
-                            onPressed: null,
-                            child: const Text('Start'),
-                          ),
-                        ),
-                      ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

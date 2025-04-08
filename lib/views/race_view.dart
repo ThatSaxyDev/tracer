@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:tracer/models/ghost_race_data.dart';
@@ -40,16 +41,17 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameNotifierProvider);
+    // final gameState = ref.watch(gameNotifierProvider);
     // GhostRaceData ghostRaceData = GhostRaceData(keystrokes: []);
 
-    if (gameState.player.isComplete(gameState.targetText)) {
-      Future.delayed(Duration.zero, () {
-        ref.read(ghostRaceDataProvider.notifier).setLastSavedKeystroke();
+    if (ref.watch(gameNotifierProvider).player.isComplete(ref.watch(gameNotifierProvider).targetText)) {
+     Future.delayed(0.ms , () {
         Navigator.pushReplacement(
           // ignore: use_build_context_synchronously
           context,
-          MaterialPageRoute(builder: (_) => const ResultScreen()),
+          MaterialPageRoute(
+            builder: (_) => const ResultScreen(),
+          ),
         );
       });
       return const SizedBox.shrink();
@@ -71,7 +73,7 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
               // const Text('Typing Challenge',
               //     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               // const SizedBox(height: 12),
-              PlayerView(player: gameState.player),
+              PlayerView(player: ref.watch(gameNotifierProvider).player),
               const SizedBox(height: 14),
               SizedBox(
                 width: MediaQuery.of(context).size.width,
@@ -79,14 +81,14 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                 child: Stack(
                   children: [
                     AnimatedSign(
-                      progress: gameState.player.input.length /
-                          gameState.targetText.length,
+                      progress: ref.watch(gameNotifierProvider).player.input.length /
+                          ref.watch(gameNotifierProvider).targetText.length,
                       isIndefinite: false,
                       direction: ArrowDirection.left,
                     ),
                     AnimatedSign(
                       progress: ref.watch(ghostInputProvider).input.length /
-                          gameState.targetText.length,
+                          ref.watch(gameNotifierProvider).targetText.length,
                       isIndefinite: false,
                       direction: ArrowDirection.right,
                     ),
@@ -107,7 +109,7 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                   .lastSavedkeystrokes
                   .isNotEmpty)
                 TypeDisplay(
-                  target: gameState.targetText,
+                  target: ref.watch(gameNotifierProvider).targetText,
                   input: ref.watch(ghostInputProvider).input,
                   player: PlayerEntity(
                       playerId: '0',
@@ -141,12 +143,12 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                         startedPlayBack.value = true;
                         ref.read(ghostInputProvider.notifier).startPlayback();
                       }
-                      if (value.length >= gameState.player.input.length) {
+                      if (value.length >= ref.watch(gameNotifierProvider).player.input.length) {
                         ref
                             .read(gameNotifierProvider.notifier)
                             .updateInput(value: value);
                       } else {
-                        _controller.text = gameState.player.input;
+                        _controller.text = ref.watch(gameNotifierProvider).player.input;
                         // _controller.selection = TextSelection.fromPosition(
                         //   TextPosition(offset: gameState.player.input.length),
                         // );

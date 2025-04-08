@@ -12,22 +12,30 @@ class GhostRaceDataNotifier extends Notifier<GhostRaceData> {
     return mediumGhostRace;
   }
 
-  void addKeystroke(int charIndex, Duration timestamp, String character) {
-    state = state.copyWith(
-      currentkeystrokes: [
-        ...state.currentkeystrokes,
-        GhostKeystroke(
-            charIndex: charIndex, timestamp: timestamp, character: character),
-      ],
-    );
+  void setGhostDifficultyLevel({required GhostRaceData ghostLevel}) {
+    state = ghostLevel;
   }
 
-  void setLastSavedKeystroke() {
-    state = state.copyWith(
-      lastSavedkeystrokes: state.currentkeystrokes,
-    );
-    state = state.copyWith(currentkeystrokes: []);
-  }
+  // void addKeystroke(
+  //   int charIndex,
+  //   Duration timestamp,
+  //   String character,
+  // ) {
+  //   state = state.copyWith(
+  //     currentkeystrokes: [
+  //       ...state.currentkeystrokes,
+  //       GhostKeystroke(
+  //           charIndex: charIndex, timestamp: timestamp, character: character),
+  //     ],
+  //   );
+  // }
+
+  // void setLastSavedKeystroke() {
+  //   state = state.copyWith(
+  //     lastSavedkeystrokes: state.currentkeystrokes,
+  //   );
+  //   state = state.copyWith(currentkeystrokes: []);
+  // }
 }
 
 class GhostRaceData {

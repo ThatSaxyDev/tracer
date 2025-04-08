@@ -70,3 +70,11 @@ GhostRaceData goHomeGhostRace = GhostRaceData(
   currentkeystrokes: [],
   lastSavedkeystrokes: goHomeKeystrokes,
 );
+
+List<GhostRaceData> ghostLevels = [
+  easyGhostRace,
+  mediumGhostRace,
+  hardGhostRace,
+  goHomeGhostRace,
+];
+
