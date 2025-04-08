@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,7 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
     }
 
     print('Ghost playback started');
+    final now = DateTime.now();
     List<GhostKeystroke> keystrokes = ghostRaceData.lastSavedkeystrokes;
     final total = keystrokes.length;
 
@@ -72,7 +74,18 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
         input: reconstructedTargetText.substring(0, i + 1),
         playBackState: PlayBackState.playing,
       );
+      final trimmedInput = state.input.trimRight();
+      final cappedInput = trimmedInput.length > targetText.length
+          ? trimmedInput.substring(0, targetText.length)
+          : trimmedInput;
+
+      final isFirstInput = state.startTime == null && cappedInput.isNotEmpty;
+      final isComplete = cappedInput.length >= targetText.length;
       // print('Ghost typed: ${reconstructedTargetText[i]} at $delay');
+      // if (isFirstInput) _startTimer();
+      if (isComplete && state.endTime == null) {
+        stopPlayback();
+      }
     }
 
     // End playback
@@ -106,19 +119,32 @@ enum PlayBackState {
 class GhostInputState {
   final String input;
   final PlayBackState playBackState;
+  final DateTime? startTime;
+  final DateTime? endTime;
 
   GhostInputState({
     required this.input,
     required this.playBackState,
+    this.startTime,
+    this.endTime,
   });
+
+  Duration get elapsedTime {
+    if (startTime == null) return Duration.zero;
+    return (endTime ?? DateTime.now()).difference(startTime!);
+  }
 
   GhostInputState copyWith({
     String? input,
     PlayBackState? playBackState,
+    DateTime? startTime,
+    DateTime? endTime,
   }) {
     return GhostInputState(
       input: input ?? this.input,
       playBackState: playBackState ?? this.playBackState,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
     );
   }
 }
