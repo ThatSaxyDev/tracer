@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tracer/notifiers/game_notifier.dart';
 import 'package:tracer/notifiers/ghost_input_notifier.dart';
 import 'package:tracer/views/home_view.dart';
+import 'package:tracer/widgets/game_button.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
@@ -35,16 +36,25 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('🎉 Race Complete!', style: TextStyle(fontSize: 24)),
+              const Text('🎉 Race Complete!',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontFamily: 'Courier',
+                      fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               Text(
                 'Your Time: ${duration.inSeconds}.${(duration.inMilliseconds % 1000).toString().padLeft(3, '0')}s',
-                style: const TextStyle(fontSize: 20, color: Colors.greenAccent),
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.greenAccent,
+                  fontFamily: 'Courier',
+                ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Accuracy: ${accuracy.toStringAsFixed(1)}%',
                 style: TextStyle(
+                  fontFamily: 'Courier',
                   fontSize: 18,
                   color: accuracy >= 95
                       ? Colors.greenAccent
@@ -56,10 +66,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               const SizedBox(height: 12),
               Text(
                 'WPM: ${game.player.wpm(game.targetText).toStringAsFixed(1)}',
-                style: const TextStyle(fontSize: 18, color: Colors.cyanAccent),
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.cyanAccent,
+                  fontFamily: 'Courier',
+                ),
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
+              GameButton(
                 onPressed: () {
                   ref.read(gameNotifierProvider.notifier).clearData();
                   ref.read(ghostInputProvider.notifier).clearGhostInput();
@@ -68,17 +82,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                     MaterialPageRoute(builder: (_) => const HomeScreen()),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.greenAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                ),
-                child: const Text(
-                  'Try Again',
-                  style: TextStyle(color: Colors.black),
-                ),
+                text: 'Try Again',
               ),
             ],
           ),
