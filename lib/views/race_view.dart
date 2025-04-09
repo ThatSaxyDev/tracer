@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tracer/models/game_state.dart';
 
 import 'package:tracer/models/ghost_race_data.dart';
 import 'package:tracer/models/player_entity.dart';
@@ -8,6 +9,7 @@ import 'package:tracer/notifiers/ghost_input_notifier.dart';
 import 'package:tracer/shared/extensions.dart';
 import 'package:tracer/widgets/animated_sign.dart/animated_sign.dart';
 import 'package:tracer/widgets/animated_sign.dart/tracer_insignia.dart';
+import 'package:tracer/widgets/game_button.dart';
 import 'package:tracer/widgets/player_view.dart';
 
 import '../notifiers/game_notifier.dart';
@@ -24,15 +26,7 @@ class RaceScreen extends ConsumerStatefulWidget {
 class _RaceScreenState extends ConsumerState<RaceScreen> {
   final startedPlayBack = false.notifier;
   final _controller = TextEditingController();
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback(
-  //     (_) {
-  //       // ref.read(ghostInputProvider.notifier).startPlayback();
-  //     },
-  //   );
-  // }
+  bool _hasShownDialog = false;
 
   @override
   void dispose() {
@@ -40,27 +34,81 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // final gameState = ref.watch(gameNotifierProvider);
-    // GhostRaceData ghostRaceData = GhostRaceData(keystrokes: []);
+  void _checkCompletion(GameState? prev, GameState next, WidgetRef ref) {
+    final targetText = next.targetText;
 
-    if (ref
-        .watch(gameNotifierProvider)
-        .player
-        .isComplete(ref.watch(gameNotifierProvider).targetText)) {
-      Future.delayed(0.ms, () {
-        Navigator.pushReplacement(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(
-            builder: (_) => const ResultScreen(),
+    final playerCompletedBefore = prev?.player.isComplete(targetText) ?? false;
+    final playerCompletedNow = next.player.isComplete(targetText);
+
+    final ghostInput = ref.read(ghostInputProvider).input;
+    final ghostCompleted = ghostInput.length >= targetText.length;
+
+    final hasJustCompleted =
+        !playerCompletedBefore && (playerCompletedNow || ghostCompleted);
+
+    if (hasJustCompleted) {
+      hideKeyboard(context);
+      ref.read(gameNotifierProvider.notifier).stopTimer();
+    }
+
+    if (hasJustCompleted && !_hasShownDialog) {
+      _hasShownDialog = true;
+
+      final whoWon = playerCompletedNow
+          ? 'You won!'
+          : ghostCompleted
+              ? 'Ghost won!'
+              : 'It\'s a tie!';
+
+      Future.microtask(() {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (contextt) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              whoWon,
+              style: TextStyle(
+                color:
+                    playerCompletedNow ? Colors.greenAccent : Colors.redAccent,
+                fontFamily: 'Courier',
+              ),
+            ),
+            content: const Text('See how you did in the results screen.'),
+            actions: [
+              GameButton(
+                onPressed: () {
+                  Navigator.of(contextt).pop();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ResultScreen(),
+                    ),
+                  );
+                },
+                text: 'View Results',
+              ),
+            ],
           ),
         );
       });
-      return const SizedBox.shrink();
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    // Listen for when player completes the race
+    ref.listen<GameState>(gameNotifierProvider, (prev, next) {
+      _checkCompletion(prev, next, ref);
+    });
+
+    ref.listen<GhostInputState>(ghostInputProvider, (_, __) {
+      final gameState = ref.read(gameNotifierProvider);
+      _checkCompletion(
+          null, gameState, ref); // use null as prev to focus on ghost
+    });
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         ref.read(ghostInputProvider.notifier).clearGhostInput();
@@ -136,20 +184,6 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                         startedPlayBack.value = true;
                         ref.read(ghostInputProvider.notifier).startPlayback();
                       }
-
-                      // // Check if typing penalty is active
-                      // final isPenaltyActive =
-                      //     ref.read(gameNotifierProvider).isTypoPenaltyActive;
-
-                      // // If penalty active, revert to previous text state (no input accepted)
-                      // if (isPenaltyActive) {
-                      //   _controller.text =
-                      //       ref.read(gameNotifierProvider).player.input;
-                      //   _controller.selection = TextSelection.fromPosition(
-                      //     TextPosition(offset: _controller.text.length),
-                      //   );
-                      //   return;
-                      // }
 
                       // Prevent backspacing by ensuring the input length doesn't decrease
                       if (value.length >=
@@ -227,4 +261,8 @@ RichText formatDuration(Duration d) {
     ],
   ));
   // return '$minutes mins ${seconds.toString().padLeft(2, '0')} secs ${(d.inMilliseconds % 1000).toString().padLeft(3, '0')}';
+}
+
+void hideKeyboard(BuildContext context) {
+  FocusScope.of(context).unfocus();
 }

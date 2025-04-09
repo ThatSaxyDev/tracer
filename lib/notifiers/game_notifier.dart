@@ -27,7 +27,7 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   void clearData() {
-    _stopTimer();
+    stopTimer();
     _cancelTypoTimer();
     state = GameState(
       targetText: targetText,
@@ -97,7 +97,7 @@ class GameNotifier extends Notifier<GameState> {
     // Start UI update timer
     if (isFirstInput) _startTimer();
     if (isComplete && state.player.endTime == null) {
-      _stopTimer();
+      stopTimer();
       if (onComplete != null) onComplete();
     }
 
@@ -147,7 +147,7 @@ class GameNotifier extends Notifier<GameState> {
     });
   }
 
-  void _stopTimer() {
+  void stopTimer() {
     _timer?.cancel();
   }
 }
