@@ -62,6 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       'T-Racer',
                       style: TextStyle(
                         fontSize: 24,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Courier',
                       ),
@@ -129,6 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Text(
                     'Made with 💙 by Kiishi',
                     style: TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.w200,
                       fontFamily: 'Courier',
                       fontSize: 10,

@@ -58,6 +58,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 const SizedBox(height: 32),
                 const Text('🎉 Race Complete!',
                     style: TextStyle(
+                        color: Colors.white,
                         fontSize: 24,
                         fontFamily: 'Courier',
                         fontWeight: FontWeight.bold)),

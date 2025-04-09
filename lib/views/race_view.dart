@@ -78,7 +78,14 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                 fontFamily: 'Courier',
               ),
             ),
-            content: const Text('See how you did in the results screen.'),
+            content: Text(
+              'See how you did in the results screen.',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Courier',
+                fontSize: 12,
+              ),
+            ),
             actions: [
               GameButton(
                 onPressed: () {
