@@ -19,7 +19,7 @@ class PlayerView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        formatDuration(player.elapsedTime),
+        // formatDuration(player.elapsedTime),
 
         // Text(
         //     'Accuracy: ${player.accuracy(gameState.targetText).toStringAsFixed(1)}%',

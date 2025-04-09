@@ -17,6 +17,11 @@ class LevelSelectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1E1E1E),
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),

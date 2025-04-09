@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,93 +118,161 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
         ref.read(ghostInputProvider.notifier).stopPlayback();
       },
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF1E1E1E),
+          elevation: 0,
+          title: formatDuration(
+              ref.watch(gameNotifierProvider).player.elapsedTime),
+        ),
+        // extendBodyBehindAppBar: true,
+        body: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Stack(
             children: [
-              // const Text('Typing Challenge',
-              //     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              // const SizedBox(height: 12),
-              PlayerView(player: ref.watch(gameNotifierProvider).player),
-              const SizedBox(height: 14),
-              TracerInsignia(
-                width: MediaQuery.of(context).size.width,
-                height: 50,
-                isIndefinite: false,
-                leftProgress:
-                    ref.watch(gameNotifierProvider).player.input.length /
-                        ref.watch(gameNotifierProvider).targetText.length,
-                rightProgress: ref.watch(ghostInputProvider).input.length /
-                    ref.watch(gameNotifierProvider).targetText.length,
-              ),
+              SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // const Text('Typing Challenge',
+                    //     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    // const SizedBox(height: 12),
+                    PlayerView(player: ref.watch(gameNotifierProvider).player),
+                    const SizedBox(height: 14),
+                    TracerInsignia(
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      isIndefinite: false,
+                      leftProgress:
+                          ref.watch(gameNotifierProvider).player.input.length /
+                              ref.watch(gameNotifierProvider).targetText.length,
+                      rightProgress:
+                          ref.watch(ghostInputProvider).input.length /
+                              ref.watch(gameNotifierProvider).targetText.length,
+                    ),
 
-              // Row(
-              //   children: [
-              //     AnimatedLessThanSign(),
-              //     AnimatedGreaterThanSign(),
-              //   ],
-              // ),
-              const SizedBox(height: 14),
+                    // Row(
+                    //   children: [
+                    //     AnimatedLessThanSign(),
+                    //     AnimatedGreaterThanSign(),
+                    //   ],
+                    // ),
+                    const SizedBox(height: 14),
 
-              // if (gameState.otherPlayers.isNotEmpty)
-              if (ref
-                  .watch(ghostRaceDataProvider)
-                  .lastSavedkeystrokes
-                  .isNotEmpty)
-                TypeDisplay(
-                  target: ref.watch(gameNotifierProvider).targetText,
-                  input: ref.watch(ghostInputProvider).input,
-                  player: PlayerEntity(
-                      playerId: '0',
-                      input: ref.watch(ghostInputProvider).input),
+                    // if (gameState.otherPlayers.isNotEmpty)
+                    if (ref
+                        .watch(ghostRaceDataProvider)
+                        .lastSavedkeystrokes
+                        .isNotEmpty)
+                      TypeDisplay(
+                        target: ref.watch(gameNotifierProvider).targetText,
+                        input: ref.watch(ghostInputProvider).input,
+                        player: PlayerEntity(
+                            playerId: '0',
+                            input: ref.watch(ghostInputProvider).input),
+                      ),
+
+                    const SizedBox(height: 24),
+                  ],
                 ),
-
-              const SizedBox(height: 24),
+              ),
               [startedPlayBack, _controller].multiSync(
                 builder: (context, child) {
-                  return TextField(
-                    controller: _controller,
-                    autofocus: false,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    cursorColor: Colors.greenAccent,
-                    inputFormatters: [
-                      NoPasteFormatter(),
-                    ],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Courier',
-                    ),
-                    maxLines: 1,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      if (value.isNotEmpty && !startedPlayBack.value) {
-                        startedPlayBack.value = true;
-                        ref.read(ghostInputProvider.notifier).startPlayback();
-                      }
+                  return SafeArea(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24)
+                            .copyWith(bottom: 30),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white
+                                    .withAlpha(25), // Semi-transparent overlay
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: TextField(
+                                controller: _controller,
+                                autofocus: false,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                cursorColor: Colors.greenAccent,
+                                inputFormatters: [
+                                  NoPasteFormatter(),
+                                ],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Courier',
+                                ),
+                                maxLines: 1,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (value) {
+                                  if (value.isNotEmpty &&
+                                      !startedPlayBack.value) {
+                                    startedPlayBack.value = true;
+                                    ref
+                                        .read(ghostInputProvider.notifier)
+                                        .startPlayback();
+                                  }
 
-                      // Prevent backspacing by ensuring the input length doesn't decrease
-                      if (value.length >=
-                          ref.watch(gameNotifierProvider).player.input.length) {
-                        ref.read(gameNotifierProvider.notifier).updateInput(
-                              value: value,
-                              typoPenaltyEffect: () {
-                                _controller.text =
-                                    ref.read(gameNotifierProvider).player.input;
-                              },
-                            );
-                      } else {
-                        _controller.text =
-                            ref.watch(gameNotifierProvider).player.input;
-                        // _controller.selection = TextSelection.fromPosition(
-                        //   TextPosition(offset: gameState.player.input.length),
-                        // );
-                      }
-                    },
+                                  // Prevent backspacing by ensuring the input length doesn't decrease
+                                  if (value.length >=
+                                      ref
+                                          .watch(gameNotifierProvider)
+                                          .player
+                                          .input
+                                          .length) {
+                                    ref
+                                        .read(gameNotifierProvider.notifier)
+                                        .updateInput(
+                                          value: value,
+                                          typoPenaltyEffect: () {
+                                            _controller.text = ref
+                                                .read(gameNotifierProvider)
+                                                .player
+                                                .input;
+                                            _controller.selection =
+                                                TextSelection.fromPosition(
+                                              TextPosition(
+                                                  offset: ref
+                                                      .read(
+                                                          gameNotifierProvider)
+                                                      .player
+                                                      .input
+                                                      .length),
+                                            );
+                                          },
+                                        );
+                                  } else {
+                                    _controller.text = ref
+                                        .watch(gameNotifierProvider)
+                                        .player
+                                        .input;
+                                    _controller.selection =
+                                        TextSelection.fromPosition(
+                                      TextPosition(
+                                          offset: ref
+                                              .watch(gameNotifierProvider)
+                                              .player
+                                              .input
+                                              .length),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),
