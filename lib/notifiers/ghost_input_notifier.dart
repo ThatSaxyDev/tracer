@@ -37,13 +37,14 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
   void startPlayback() async {
     state = state.copyWith(
       playBackState: PlayBackState.notStarted,
+      startTime: DateTime.now(),
+      endTime: null,
     );
     if (ghostRaceData.lastSavedkeystrokes.isEmpty) {
       return;
     }
 
     print('Ghost playback started');
-    final now = DateTime.now();
     List<GhostKeystroke> keystrokes = ghostRaceData.lastSavedkeystrokes;
     final total = keystrokes.length;
 
@@ -89,12 +90,12 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
     }
 
     // End playback
-    if (state.playBackState != PlayBackState.stopped) {
-      state = state.copyWith(
-        playBackState: PlayBackState.stopped,
-      );
-      print('Ghost playback ended');
-    }
+    // if (state.playBackState != PlayBackState.stopped) {
+    //   state = state.copyWith(
+    //     playBackState: PlayBackState.stopped,
+    //   );
+    //   print('Ghost playback ended');
+    // }
   }
 
   void stopPlayback() {
@@ -102,9 +103,12 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
     if (playbackTimer?.isActive ?? false) {
       playbackTimer?.cancel();
     }
+    // Set endTime when stopping playback
     state = state.copyWith(
       playBackState: PlayBackState.stopped,
+      endTime: DateTime.now(), // Add this line
     );
+
     print('Ghost playback stopped');
   }
 }
@@ -132,6 +136,26 @@ class GhostInputState {
   Duration get elapsedTime {
     if (startTime == null) return Duration.zero;
     return (endTime ?? DateTime.now()).difference(startTime!);
+  }
+
+  int correctChars(String targetText) {
+    int correct = 0;
+    for (int i = 0; i < input.length && i < targetText.length; i++) {
+      if (input[i] == targetText[i]) correct++;
+    }
+    return correct;
+  }
+
+  double accuracy(String targetText) {
+    if (input.isEmpty) return 0;
+    return (correctChars(targetText) / input.length) * 100;
+  }
+
+  double wpm(String targetText) {
+    if (startTime == null || input.isEmpty) return 0;
+    final minutes = elapsedTime.inMilliseconds / 60000;
+    if (minutes == 0) return 0;
+    return (correctChars(targetText) / 5) / minutes;
   }
 
   GhostInputState copyWith({
