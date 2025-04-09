@@ -133,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       fontFamily: 'Courier',
                       fontSize: 10,
                     ),
-                  ),
+                  ).fadeInFromBottom(delay: 500.ms),
                 ),
               ),
             ],
