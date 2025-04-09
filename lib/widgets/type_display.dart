@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:tracer/models/player_entity.dart';
+import 'package:tracer/shared/extensions.dart';
 import 'package:tracer/widgets/shake_widget.dart';
 
 class TypeDisplay extends StatelessWidget {
@@ -21,6 +23,7 @@ class TypeDisplay extends StatelessWidget {
     for (int i = 0; i < target.length; i++) {
       final bool isUserTyped = i < input.length;
       final bool isCursor = i == input.length;
+      final bool isPrevious = i == input.length - 1;
 
       Color color;
       if (isUserTyped) {
@@ -50,11 +53,21 @@ class TypeDisplay extends StatelessWidget {
             child: isUserTyped && input[i] != target[i]
                 ? ShakeWidget(
                     key: ValueKey('$i-${input[i]}'),
-                    child: _buildStyledChar(target[i], color, isCursor,
-                        ValueKey('$i-${input.length > i ? input[i] : ''}')),
+                    child: _buildStyledChar(
+                      target[i],
+                      color,
+                      isCursor,
+                      isPrevious,
+                      ValueKey('$i-${input.length > i ? input[i] : ''}'),
+                    ),
                   )
-                : _buildStyledChar(target[i], color, isCursor,
-                    ValueKey('$i-${input.length > i ? input[i] : ''}')),
+                : _buildStyledChar(
+                    target[i],
+                    color,
+                    isCursor,
+                    isPrevious,
+                    ValueKey('$i-${input.length > i ? input[i] : ''}'),
+                  ),
           ),
         ),
       );
@@ -69,10 +82,16 @@ class TypeDisplay extends StatelessWidget {
     String char,
     Color color,
     bool isCursor,
+    bool isPrevious,
     Key key,
   ) {
+    final isSpace = char == ' ';
+    final shouldShowUnderscore = isSpace && (isCursor || isPrevious);
+
+    final displayChar = shouldShowUnderscore ? '_' : char;
+
     return Text(
-      char,
+      displayChar,
       key: key,
       style: TextStyle(
         fontSize: player.playerId == '-1' ? 18 : 12,

@@ -66,7 +66,7 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
           barrierDismissible: false,
           builder: (contextt) => AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(8),
             ),
             title: Text(
               whoWon,
@@ -80,7 +80,7 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
             actions: [
               GameButton(
                 onPressed: () {
-                  Navigator.of(contextt).pop();
+                  // Navigator.of(contextt).pop();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(

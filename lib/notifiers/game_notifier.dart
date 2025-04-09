@@ -50,10 +50,10 @@ class GameNotifier extends Notifier<GameState> {
       return;
     }
 
-    final trimmedInput = value.trimRight();
-    final cappedInput = trimmedInput.length > targetText.length
-        ? trimmedInput.substring(0, targetText.length)
-        : trimmedInput;
+    // final trimmedInput = value.trimRight();
+    final cappedInput = value.length > targetText.length
+        ? value.substring(0, targetText.length)
+        : value;
 
     // Check for typo
     if (cappedInput.isNotEmpty && targetText.isNotEmpty) {
@@ -113,14 +113,25 @@ class GameNotifier extends Notifier<GameState> {
     state = state.copyWith(isTypoPenaltyActive: true);
 
     // Start a timer that matches the duration of your animation
-    // The shake animation + fade transition takes approximately 500ms based on your code
-    // So let's set a slightly longer delay to ensure the animation completes
     _typoTimer = Timer(const Duration(milliseconds: 650), () {
-      // After the animation plays, delete the word and allow input again
-      int lastSpaceIndex = input.lastIndexOf(' ', currentPosition - 1);
-      String correctedValue = lastSpaceIndex >= 0
-          ? input.substring(0, lastSpaceIndex + 1)
-          : ''; // +1 to keep the space
+      // Check if we're dealing with the first word
+      int firstSpaceIndex = state.targetText.indexOf(' ');
+      bool isFirstWord =
+          firstSpaceIndex == -1 || currentPosition <= firstSpaceIndex;
+
+      // Handle differently based on whether it's the first word or not
+      String correctedValue;
+
+      if (isFirstWord) {
+        // For first word, only delete the current character, not the whole word
+        correctedValue = '';
+      } else {
+        // For subsequent words, delete the whole word as before
+        int lastSpaceIndex = input.lastIndexOf(' ', currentPosition - 1);
+        correctedValue = lastSpaceIndex >= 0
+            ? input.substring(0, lastSpaceIndex + 1)
+            : ''; // +1 to keep the space
+      }
 
       // Update the player's input
       state = state.copyWith(

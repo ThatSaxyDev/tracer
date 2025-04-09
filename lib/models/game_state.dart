@@ -28,8 +28,7 @@ class GameState {
   }
 }
 
-String targetText =
-    'Despite the rain pouring down outside, the determined developer continued to type, line after line, perfecting their creation with every keystroke, unaware of how much time had passed.';
+String targetText = 'Despite the rain';
 
 // String tTExt = 'The text is short';
 
