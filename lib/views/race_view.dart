@@ -86,7 +86,13 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const ResultScreen(),
+                      builder: (_) => ResultScreen(
+                        winner: playerCompletedNow
+                            ? 'player'
+                            : ghostCompleted
+                                ? 'ghost'
+                                : 'tie',
+                      ),
                     ),
                   );
                 },
