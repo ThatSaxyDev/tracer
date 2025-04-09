@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.1
   flutter_animate: ^4.5.2
+  flutter_native_splash: ^2.4.4
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +31,14 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/images/app-logo.png"
+
+flutter_native_splash:
+  color: "#1E1E1E" # mona
+  image: "assets/images/app-logo.png"
+  icon_background_color: "#1E1E1E" # mona
+  fullscreen: true
+  android: true
+  ios: true
 
 flutter:
   uses-material-design: true
