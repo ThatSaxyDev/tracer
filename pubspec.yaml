@@ -34,7 +34,7 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#1E1E1E" # mona
-  image: "assets/images/app-logo.png"
+  image: "assets/images/app-logo2.png"
   icon_background_color: "#1E1E1E" # mona
   fullscreen: true
   android: true
