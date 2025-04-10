@@ -17,7 +17,11 @@ class GameNotifier extends Notifier<GameState> {
   GameState build() {
     return GameState(
       targetText: targetText,
-      player: PlayerEntity(playerId: '-1', input: ''),
+      player: PlayerEntity(
+        playerId: '-1',
+        input: '',
+        playerName: 'You',
+      ),
       otherPlayers: [],
     );
   }
@@ -31,10 +35,22 @@ class GameNotifier extends Notifier<GameState> {
     _cancelTypoTimer();
     state = GameState(
       targetText: targetText,
-      player: PlayerEntity(playerId: '-1', input: ''),
+      player: PlayerEntity(
+        playerId: '-1',
+        input: '',
+        playerName: 'You',
+      ),
       otherPlayers: [],
       isTypoPenaltyActive: false,
     );
+  }
+
+  void addNewPlayer({required PlayerEntity newPlayer}) {
+    state = state.copyWith(otherPlayers: [newPlayer, ...state.otherPlayers]);
+  }
+
+  void removeAllPlayers() {
+    state = state.copyWith(otherPlayers: []);
   }
 
   void updateInput({
@@ -160,6 +176,51 @@ class GameNotifier extends Notifier<GameState> {
 
   void stopTimer() {
     _timer?.cancel();
+  }
+
+  void updateGhostPlayer({
+    String? input,
+    DateTime? startTime,
+    DateTime? endTime,
+  }) {
+    // Find the ghost player in the list of otherPlayers
+    final ghostIndex =
+        state.otherPlayers.indexWhere((player) => player.playerName == 'Ghost');
+
+    if (ghostIndex != -1) {
+      // If the ghost player exists, update it
+      final ghostPlayer = state.otherPlayers[ghostIndex];
+      final updatedGhostPlayer = ghostPlayer.copyWith(
+        input: input,
+        startTime: startTime,
+        endTime: endTime,
+      );
+
+      // Create a new list with the updated ghost player
+      final updatedOtherPlayers = List<PlayerEntity>.from(state.otherPlayers);
+      updatedOtherPlayers[ghostIndex] = updatedGhostPlayer;
+
+      // Update the state with the new list
+      state = state.copyWith(otherPlayers: updatedOtherPlayers);
+    } else {
+      // If the ghost player doesn't exist, create and add it
+      final newGhostPlayer = PlayerEntity(
+        playerId: 'ghost-${DateTime.now().millisecondsSinceEpoch}',
+        playerName: 'Ghost',
+        isGhost: true,
+        input: input ?? '',
+        startTime: startTime,
+        endTime: endTime,
+      );
+
+      state = state.copyWith(
+        otherPlayers: [newGhostPlayer, ...state.otherPlayers],
+      );
+    }
+  }
+
+  void updateGhostInput(String value) {
+    updateGhostPlayer(input: value);
   }
 }
 

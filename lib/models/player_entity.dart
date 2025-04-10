@@ -1,11 +1,15 @@
 class PlayerEntity {
   final String playerId;
+  final String playerName;
+  final bool isGhost;
   final String input;
   final DateTime? startTime;
   final DateTime? endTime;
 
   PlayerEntity({
     required this.playerId,
+    required this.playerName,
+    this.isGhost = false,
     required this.input,
     this.startTime,
     this.endTime,
@@ -40,12 +44,17 @@ class PlayerEntity {
   }
 
   PlayerEntity copyWith({
+    String? playerId,
+    String? playerName,
+    bool? isGhost,
     String? input,
     DateTime? startTime,
     DateTime? endTime,
   }) {
     return PlayerEntity(
-      playerId: playerId,
+      playerId: playerId ?? this.playerId,
+      playerName: playerName ?? this.playerName,
+      isGhost: isGhost ?? this.isGhost,
       input: input ?? this.input,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,

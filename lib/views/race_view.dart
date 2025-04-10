@@ -37,30 +37,88 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
   }
 
   void _checkCompletion(GameState? prev, GameState next, WidgetRef ref) {
+    final otherPlayers = ref.read(gameNotifierProvider).otherPlayers;
+    if (otherPlayers.isEmpty) return;
+
     final targetText = next.targetText;
 
+    // Check if player just completed
     final playerCompletedBefore = prev?.player.isComplete(targetText) ?? false;
     final playerCompletedNow = next.player.isComplete(targetText);
 
-    final ghostInput = ref.read(ghostInputProvider).input;
-    final ghostCompleted = ghostInput.length >= targetText.length;
-
-    final hasJustCompleted =
-        !playerCompletedBefore && (playerCompletedNow || ghostCompleted);
-
-    if (hasJustCompleted) {
-      hideKeyboard(context);
-      ref.read(gameNotifierProvider.notifier).stopTimer();
+    if (!playerCompletedBefore && playerCompletedNow) {
+      print(
+          'Player just completed: ${next.player.playerId} at ${next.player.endTime}');
     }
 
-    if (hasJustCompleted && !_hasShownDialog) {
-      _hasShownDialog = true;
+    // Check if any ghost just completed
+    for (final ghost in otherPlayers) {
+      final ghostCompletedBefore = prev?.otherPlayers
+              .firstWhere((p) => p.playerId == ghost.playerId,
+                  orElse: () =>
+                      PlayerEntity(playerId: '', playerName: '', input: ''))
+              .isComplete(targetText) ??
+          false;
 
-      final whoWon = playerCompletedNow
-          ? 'You won!'
-          : ghostCompleted
-              ? 'Ghost won!'
-              : 'It\'s a tie!';
+      final ghostCompletedNow = ghost.isComplete(targetText);
+
+      if (!ghostCompletedBefore && ghostCompletedNow) {
+        print(
+            '${ghost.playerName} just completed: ID=${ghost.playerId} at ${ghost.endTime}');
+      }
+    }
+
+    // Check if ALL players have finished
+    final allPlayersFinished = next.player.isComplete(targetText) &&
+        otherPlayers.every((p) => p.isComplete(targetText));
+
+    // Only show dialog when everyone has finished
+    if (allPlayersFinished && !_hasShownDialog) {
+      _hasShownDialog = true;
+      hideKeyboard(context);
+      ref.read(gameNotifierProvider.notifier).stopTimer();
+
+      // Debug information - print everyone's completion times
+      print('--- ALL PLAYERS FINISHED ---');
+      print(
+          'Player: ID=${next.player.playerId}, EndTime=${next.player.endTime}');
+      for (final ghost in otherPlayers) {
+        print(
+            '${ghost.playerName}: ID=${ghost.playerId}, EndTime=${ghost.endTime}');
+      }
+
+      // Create a copy of players to ensure we don't modify the original list
+      final allFinishers = <PlayerEntity>[next.player];
+      allFinishers.addAll(otherPlayers);
+
+      // Sort by completion time
+      allFinishers.sort((a, b) {
+        // Handle null cases explicitly
+        if (a.endTime == null && b.endTime == null) return 0;
+        if (a.endTime == null) return 1; // Null comes last
+        if (b.endTime == null) return -1; // Null comes last
+        return a.endTime!.compareTo(b.endTime!);
+      });
+
+      // Debug the sorted list
+      print('--- SORTED FINISHERS ---');
+      for (int i = 0; i < allFinishers.length; i++) {
+        final finisher = allFinishers[i];
+        print(
+            '${i + 1}. ${finisher.playerName}: ID=${finisher.playerId}, EndTime=${finisher.endTime}');
+      }
+
+      // Determine the winner for the dialog message
+      final winner = allFinishers.first;
+      final isPlayerWinner = winner.playerId == next.player.playerId;
+
+      print('Winner: ${winner.playerName} (ID=${winner.playerId})');
+      print(
+          'Is player winner? $isPlayerWinner (Player ID=${next.player.playerId})');
+
+      final whoWon = isPlayerWinner ? 'You won!' : '${winner.playerName} won!';
+      final resultColor =
+          isPlayerWinner ? Colors.greenAccent : Colors.redAccent;
 
       Future.microtask(() {
         showDialog(
@@ -73,13 +131,12 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
             title: Text(
               whoWon,
               style: TextStyle(
-                color:
-                    playerCompletedNow ? Colors.greenAccent : Colors.redAccent,
+                color: resultColor,
                 fontFamily: 'Courier',
               ),
             ),
             content: Text(
-              'See how you did in the results screen.',
+              'See how everyone performed in the results screen.',
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Courier',
@@ -89,16 +146,11 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
             actions: [
               GameButton(
                 onPressed: () {
-                  // Navigator.of(contextt).pop();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (_) => ResultScreen(
-                        winner: playerCompletedNow
-                            ? 'player'
-                            : ghostCompleted
-                                ? 'ghost'
-                                : 'tie',
+                        finishers: allFinishers,
                       ),
                     ),
                   );
@@ -119,11 +171,11 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
       _checkCompletion(prev, next, ref);
     });
 
-    ref.listen<GhostInputState>(ghostInputProvider, (_, __) {
-      final gameState = ref.read(gameNotifierProvider);
-      _checkCompletion(
-          null, gameState, ref); // use null as prev to focus on ghost
-    });
+    // ref.listen<GhostInputState>(ghostInputProvider, (_, __) {
+    //   final gameState = ref.read(gameNotifierProvider);
+    //   _checkCompletion(
+    //       null, gameState, ref); // use null as prev to focus on ghost
+    // });
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         ref.read(ghostInputProvider.notifier).clearGhostInput();
@@ -154,17 +206,24 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                     // const SizedBox(height: 12),
                     PlayerView(player: ref.watch(gameNotifierProvider).player),
                     const SizedBox(height: 14),
-                    TracerInsignia(
-                      width: MediaQuery.of(context).size.width,
-                      height: 50,
-                      isIndefinite: false,
-                      leftProgress:
-                          ref.watch(gameNotifierProvider).player.input.length /
-                              ref.watch(gameNotifierProvider).targetText.length,
-                      rightProgress:
-                          ref.watch(ghostInputProvider).input.length /
-                              ref.watch(gameNotifierProvider).targetText.length,
-                    ),
+                    if (ref.watch(gameNotifierProvider).otherPlayers.isNotEmpty)
+                      TracerInsignia(
+                        width: MediaQuery.of(context).size.width,
+                        height: 50,
+                        isIndefinite: false,
+                        leftProgress: ref
+                                .watch(gameNotifierProvider)
+                                .player
+                                .input
+                                .length /
+                            ref.watch(gameNotifierProvider).targetText.length,
+                        rightProgress: ref
+                                .watch(gameNotifierProvider)
+                                .otherPlayers[0]
+                                .input
+                                .length /
+                            ref.watch(gameNotifierProvider).targetText.length,
+                      ),
 
                     // Row(
                     //   children: [
@@ -174,17 +233,25 @@ class _RaceScreenState extends ConsumerState<RaceScreen> {
                     // ),
                     const SizedBox(height: 14),
 
-                    // if (gameState.otherPlayers.isNotEmpty)
-                    if (ref
-                        .watch(ghostRaceDataProvider)
-                        .lastSavedkeystrokes
-                        .isNotEmpty)
+                    if (ref.watch(gameNotifierProvider).otherPlayers.isNotEmpty)
+                      // if (ref
+                      //     .watch(ghostRaceDataProvider)
+                      //     .lastSavedkeystrokes
+                      //     .isNotEmpty)
+
+                      //   TypeDisplay(
+                      //   target: ref.watch(gameNotifierProvider).targetText,
+                      //   input: ref.watch(ghostInputProvider).input,
+                      //   player: ghostPlayer.copyWith(
+                      //       input: ref.watch(ghostInputProvider).input),
+                      // ),
                       TypeDisplay(
                         target: ref.watch(gameNotifierProvider).targetText,
-                        input: ref.watch(ghostInputProvider).input,
-                        player: PlayerEntity(
-                            playerId: '0',
-                            input: ref.watch(ghostInputProvider).input),
+                        input: ref
+                            .watch(gameNotifierProvider)
+                            .otherPlayers[0]
+                            .input,
+                        player: ref.watch(gameNotifierProvider).otherPlayers[0],
                       ),
 
                     const SizedBox(height: 24),
@@ -349,3 +416,9 @@ RichText formatDuration(Duration d) {
 void hideKeyboard(BuildContext context) {
   FocusScope.of(context).unfocus();
 }
+
+final ghostPlayer = PlayerEntity(
+  playerId: '0',
+  input: '',
+  playerName: 'Ghost',
+);

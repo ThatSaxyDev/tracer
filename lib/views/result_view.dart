@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tracer/models/player_entity.dart';
 import 'package:tracer/notifiers/game_notifier.dart';
 import 'package:tracer/notifiers/ghost_input_notifier.dart';
 import 'package:tracer/shared/extensions.dart';
@@ -11,9 +12,9 @@ import 'package:tracer/widgets/game_button.dart';
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({
     super.key,
-    required this.winner,
+    required this.finishers,
   });
-  final String winner;
+  final List<PlayerEntity> finishers;
 
   @override
   ConsumerState<ResultScreen> createState() => _ResultScreenState();
@@ -33,8 +34,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     final game = ref.watch(gameNotifierProvider);
-    final duration = game.player.elapsedTime;
-    final ghostDuration = ref.watch(ghostInputProvider).elapsedTime;
+    final players = [game.player, ...game.otherPlayers];
     // final accuracy = game.player.accuracy(game.targetText);
 
     return PopScope(
@@ -63,25 +63,35 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                         fontFamily: 'Courier',
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
-                Text(
-                  'Your WPM: ${game.player.wpm(game.targetText).toStringAsFixed(1)}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: widget.winner == 'player'
-                        ? Colors.greenAccent
-                        : Colors.redAccent,
-                    fontFamily: 'Courier',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Ghost\'s WPM: ${ref.watch(ghostInputProvider).wpm(game.targetText).toStringAsFixed(1)}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: widget.winner == 'ghost'
-                        ? Colors.greenAccent
-                        : Colors.redAccent,
-                    fontFamily: 'Courier',
+
+                // Text(
+                //   'Your WPM: ${game.player.wpm(game.targetText).toStringAsFixed(1)}',
+                //   style: TextStyle(
+                //     fontSize: 20,
+                //     color: widget.winner == 'player'
+                //         ? Colors.greenAccent
+                //         : Colors.redAccent,
+                //     fontFamily: 'Courier',
+                //   ),
+                // ),
+                // const SizedBox(height: 12),
+                Column(
+                  spacing: 12,
+                  children: List.generate(
+                    players.length,
+                    (index) {
+                      PlayerEntity player = widget.finishers[index];
+                      return Text(
+                        '${player.playerName}\'s WPM: ${player.wpm(game.targetText).toStringAsFixed(1)}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: index == 0
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
+                          fontFamily: 'Courier',
+                        ),
+                      );
+                    },
                   ),
                 ),
                 // Text(

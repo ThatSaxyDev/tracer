@@ -97,6 +97,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                                           switch (index) {
                                             case 0:
+                                              ref
+                                                  .watch(gameNotifierProvider
+                                                      .notifier)
+                                                  .addNewPlayer(
+                                                      newPlayer: ghostPlayer);
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(

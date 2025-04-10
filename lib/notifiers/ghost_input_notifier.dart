@@ -22,14 +22,14 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
   @override
   GhostInputState build() {
     return GhostInputState(
-      input: '',
+      // input: '',
       playBackState: PlayBackState.notStarted,
     );
   }
 
   void clearGhostInput() {
     state = state.copyWith(
-      input: '',
+      // input: '',
       playBackState: PlayBackState.notStarted,
     );
   }
@@ -40,6 +40,10 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
       startTime: DateTime.now(),
       endTime: null,
     );
+    ref.read(gameNotifierProvider.notifier).updateGhostPlayer(
+          startTime: DateTime.now(),
+          endTime: null,
+        );
     if (ghostRaceData.lastSavedkeystrokes.isEmpty) {
       return;
     }
@@ -72,10 +76,14 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
       }
 
       state = state.copyWith(
-        input: reconstructedTargetText.substring(0, i + 1),
+        // input: reconstructedTargetText.substring(0, i + 1),
         playBackState: PlayBackState.playing,
       );
-      final trimmedInput = state.input.trimRight();
+      ref
+          .read(gameNotifierProvider.notifier)
+          .updateGhostInput(reconstructedTargetText.substring(0, i + 1));
+      final trimmedInput =
+          ref.read(gameNotifierProvider).otherPlayers[0].input.trimRight();
       final cappedInput = trimmedInput.length > targetText.length
           ? trimmedInput.substring(0, targetText.length)
           : trimmedInput;
@@ -108,6 +116,9 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
       playBackState: PlayBackState.stopped,
       endTime: DateTime.now(), // Add this line
     );
+    ref.read(gameNotifierProvider.notifier).updateGhostPlayer(
+          endTime: DateTime.now(),
+        );
 
     print('Ghost playback stopped');
   }
@@ -121,13 +132,13 @@ enum PlayBackState {
 }
 
 class GhostInputState {
-  final String input;
+  // final String input;
   final PlayBackState playBackState;
   final DateTime? startTime;
   final DateTime? endTime;
 
   GhostInputState({
-    required this.input,
+    // required this.input,
     required this.playBackState,
     this.startTime,
     this.endTime,
@@ -138,34 +149,34 @@ class GhostInputState {
     return (endTime ?? DateTime.now()).difference(startTime!);
   }
 
-  int correctChars(String targetText) {
-    int correct = 0;
-    for (int i = 0; i < input.length && i < targetText.length; i++) {
-      if (input[i] == targetText[i]) correct++;
-    }
-    return correct;
-  }
+  // int correctChars(String targetText) {
+  //   int correct = 0;
+  //   for (int i = 0; i < input.length && i < targetText.length; i++) {
+  //     if (input[i] == targetText[i]) correct++;
+  //   }
+  //   return correct;
+  // }
 
-  double accuracy(String targetText) {
-    if (input.isEmpty) return 0;
-    return (correctChars(targetText) / input.length) * 100;
-  }
+  // double accuracy(String targetText) {
+  //   if (input.isEmpty) return 0;
+  //   return (correctChars(targetText) / input.length) * 100;
+  // }
 
-  double wpm(String targetText) {
-    if (startTime == null || input.isEmpty) return 0;
-    final minutes = elapsedTime.inMilliseconds / 60000;
-    if (minutes == 0) return 0;
-    return (correctChars(targetText) / 5) / minutes;
-  }
+  // double wpm(String targetText) {
+  //   if (startTime == null || input.isEmpty) return 0;
+  //   final minutes = elapsedTime.inMilliseconds / 60000;
+  //   if (minutes == 0) return 0;
+  //   return (correctChars(targetText) / 5) / minutes;
+  // }
 
   GhostInputState copyWith({
-    String? input,
+    // String? input,
     PlayBackState? playBackState,
     DateTime? startTime,
     DateTime? endTime,
   }) {
     return GhostInputState(
-      input: input ?? this.input,
+      // input: input ?? this.input,
       playBackState: playBackState ?? this.playBackState,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
