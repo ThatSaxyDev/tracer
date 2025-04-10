@@ -17,17 +17,46 @@ class GameNotifier extends Notifier<GameState> {
   GameState build() {
     return GameState(
       targetText: targetText,
-      player: PlayerEntity(
-        playerId: '-1',
-        input: '',
-        playerName: 'You',
-      ),
-      otherPlayers: [],
+      // player: PlayerEntity(
+      //   playerId: '-1',
+      //   input: '',
+      //   playerName: 'You',
+      // ),
+      players: [yourPlayer],
     );
   }
 
+  void updatePlayer({
+    String? input,
+    DateTime? startTime,
+    DateTime? endTime,
+  }) {
+    // Find the ghost player in the list of otherPlayers
+    final playerIndex =
+        state.players.indexWhere((player) => player.playerId == '-1');
+
+    // If the ghost player exists, update it
+    final player = state.players[playerIndex];
+    final updatedPlayer = player.copyWith(
+      input: input,
+      startTime: startTime,
+      endTime: endTime,
+    );
+
+    // Create a new list with the updated ghost player
+    final updatedPlayers = List<PlayerEntity>.from(state.players);
+    updatedPlayers[playerIndex] = updatedPlayer;
+
+    // Update the state with the new list
+    state = state.copyWith(players: updatedPlayers);
+  }
+
+  void updatePlayerInput(String value) {
+    updatePlayer(input: value);
+  }
+
   void clearPlayerInput() {
-    state = state.copyWith(player: state.player.copyWith(input: ''));
+    updatePlayerInput('');
   }
 
   void clearData() {
@@ -35,22 +64,27 @@ class GameNotifier extends Notifier<GameState> {
     _cancelTypoTimer();
     state = GameState(
       targetText: targetText,
-      player: PlayerEntity(
-        playerId: '-1',
-        input: '',
-        playerName: 'You',
-      ),
-      otherPlayers: [],
+      players: [yourPlayer],
       isTypoPenaltyActive: false,
     );
   }
 
   void addNewPlayer({required PlayerEntity newPlayer}) {
-    state = state.copyWith(otherPlayers: [newPlayer, ...state.otherPlayers]);
+    state = state.copyWith(players: [newPlayer, ...state.players]);
   }
 
   void removeAllPlayers() {
-    state = state.copyWith(otherPlayers: []);
+    // state = state.copyWith(players: []);
+    removeAllPlayersExcept('')
+  }
+
+  void removeAllPlayersExcept(String playerId) {
+    final players = state.players;
+    final playerToKeep = players.firstWhere(
+      (player) => player.playerId == playerId,
+    );
+
+    state = state.copyWith(players: [playerToKeep]);
   }
 
   void updateInput({
@@ -349,3 +383,9 @@ class GameNotifier extends Notifier<GameState> {
 //     _timer?.cancel();
 //   }
 // }
+
+final yourPlayer = PlayerEntity(
+  playerId: '-1',
+  input: '',
+  playerName: 'You',
+);

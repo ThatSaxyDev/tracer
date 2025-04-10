@@ -83,7 +83,7 @@ class GhostInputNotifier extends Notifier<GhostInputState> {
           .read(gameNotifierProvider.notifier)
           .updateGhostInput(reconstructedTargetText.substring(0, i + 1));
       final trimmedInput =
-          ref.read(gameNotifierProvider).otherPlayers[0].input.trimRight();
+          ref.read(gameNotifierProvider).players[0].input.trimRight();
       final cappedInput = trimmedInput.length > targetText.length
           ? trimmedInput.substring(0, targetText.length)
           : trimmedInput;
