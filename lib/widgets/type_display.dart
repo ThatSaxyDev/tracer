@@ -4,7 +4,7 @@ import 'package:tracer/models/player_entity.dart';
 import 'package:tracer/shared/extensions.dart';
 import 'package:tracer/widgets/shake_widget.dart';
 
-class TypeDisplay extends StatelessWidget {
+class TypeDisplay extends StatefulWidget {
   final String target;
   final String input;
   final PlayerEntity player;
@@ -17,17 +17,95 @@ class TypeDisplay extends StatelessWidget {
   });
 
   @override
+  State<TypeDisplay> createState() => _TypeDisplayState();
+}
+
+class _TypeDisplayState extends State<TypeDisplay> {
+  final ScrollController _scrollController = ScrollController();
+  String _previousInput = '';
+  bool _isScrolling = false;
+  // Debounce timer to reduce calculations
+  DateTime _lastScrollTime = DateTime.now();
+
+  @override
+  void didUpdateWidget(TypeDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Only process if input changed
+    if (widget.input != _previousInput) {
+      _previousInput = widget.input;
+
+      // Debounce scrolling calculations to avoid excessive processing
+      final now = DateTime.now();
+      if (now.difference(_lastScrollTime).inMilliseconds > 100) {
+        _lastScrollTime = now;
+
+        // Only schedule a scroll if we're not already scrolling
+        if (!_isScrolling) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToCurrentPosition();
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCurrentPosition() {
+    if (!_scrollController.hasClients || widget.target.isEmpty) return;
+
+    _isScrolling = true;
+
+    try {
+      // Simple formula to calculate a target scroll position
+      final viewportHeight = _scrollController.position.viewportDimension;
+      final contentHeight =
+          _scrollController.position.maxScrollExtent + viewportHeight;
+
+      // Very simple estimation - assumes text is evenly distributed
+      final progress = widget.input.length / widget.target.length;
+      final targetOffset = (contentHeight * progress) - (viewportHeight * 0.5);
+
+      // Clamp to valid range and avoid tiny movements
+      final clampedOffset =
+          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent);
+      if ((clampedOffset - _scrollController.offset).abs() > 15) {
+        _scrollController
+            .animateTo(
+          clampedOffset,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        )
+            .then((_) {
+          _isScrolling = false;
+        });
+      } else {
+        _isScrolling = false;
+      }
+    } catch (e) {
+      _isScrolling = false;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final spans = <InlineSpan>[];
 
-    for (int i = 0; i < target.length; i++) {
-      final bool isUserTyped = i < input.length;
-      final bool isCursor = i == input.length;
-      final bool isPrevious = i == input.length - 1;
+    for (int i = 0; i < widget.target.length; i++) {
+      final bool isUserTyped = i < widget.input.length;
+      final bool isCursor = i == widget.input.length;
+      final bool isPrevious = i == widget.input.length - 1;
 
       Color color;
       if (isUserTyped) {
-        color = input[i] == target[i] ? Colors.greenAccent : Colors.redAccent;
+        color = widget.input[i] == widget.target[i]
+            ? Colors.greenAccent
+            : Colors.redAccent;
       } else if (isCursor) {
         color = Colors.white;
       } else {
@@ -50,31 +128,45 @@ class TypeDisplay extends StatelessWidget {
                 ),
               );
             },
-            child: isUserTyped && input[i] != target[i]
+            child: isUserTyped && widget.input[i] != widget.target[i]
                 ? ShakeWidget(
-                    key: ValueKey('$i-${input[i]}'),
+                    key: ValueKey('$i-${widget.input[i]}'),
                     child: _buildStyledChar(
-                      target[i],
+                      widget.target[i],
                       color,
                       isCursor,
                       isPrevious,
-                      ValueKey('$i-${input.length > i ? input[i] : ''}'),
+                      ValueKey(
+                          '$i-${widget.input.length > i ? widget.input[i] : ''}'),
                     ),
                   )
                 : _buildStyledChar(
-                    target[i],
+                    widget.target[i],
                     color,
                     isCursor,
                     isPrevious,
-                    ValueKey('$i-${input.length > i ? input[i] : ''}'),
+                    ValueKey(
+                        '$i-${widget.input.length > i ? widget.input[i] : ''}'),
                   ),
           ),
         ),
       );
     }
 
-    return RichText(
-      text: TextSpan(children: spans),
+    return ClipRRect(
+      child: SizedBox(
+        height: widget.player.playerId == '-1' ? 150 : 70,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          physics: const ClampingScrollPhysics(
+              parent:
+                  NeverScrollableScrollPhysics()), // Prevents overscroll bounce
+          child: RichText(
+            text: TextSpan(children: spans),
+          ),
+        ),
+      ),
     );
   }
 
@@ -94,7 +186,7 @@ class TypeDisplay extends StatelessWidget {
       displayChar,
       key: key,
       style: TextStyle(
-        fontSize: player.playerId == '-1' ? 20 : 12,
+        fontSize: widget.player.playerId == '-1' ? 20 : 12,
         fontFamily: 'Courier',
         color: color,
         decoration: isCursor ? TextDecoration.underline : TextDecoration.none,
